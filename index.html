@@ -1,0 +1,1132 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>Бюджет — Женя и Родители</title>
+<style>
+  :root{
+    --bg: #EEF1EA;
+    --paper: #FBFBF7;
+    --ink: #1F2A24;
+    --ink-soft: #5B6960;
+    --line: #D9DED2;
+    --zhenya: #B9564A;
+    --zhenya-bg: #F3E2DE;
+    --roditeli: #3E6B8A;
+    --roditeli-bg: #E1EBF1;
+    --shared: #A17E22;
+    --shared-bg: #F1E7CC;
+    --good: #3E7A52;
+  }
+
+  *{ box-sizing: border-box; }
+
+  html,body{
+    margin:0; padding:0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body{
+    padding: 20px 14px 60px;
+  }
+
+  .wrap{
+    max-width: 880px;
+    margin: 0 auto;
+  }
+
+  header{
+    display:flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 18px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  h1{
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: clamp(24px, 5vw, 32px);
+    font-weight: 700;
+    margin: 0;
+    letter-spacing: -0.01em;
+  }
+
+  .eyebrow{
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ink-soft);
+  }
+
+  .last-saved{
+    font-size: 12px;
+    color: var(--ink-soft);
+  }
+
+  .card{
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 18px;
+    margin-bottom: 16px;
+  }
+
+  .card h2{
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 18px;
+    margin: 0 0 14px;
+    display:flex;
+    align-items:center;
+    gap: 8px;
+  }
+
+  .total-budget{
+    text-align:center;
+    padding: 22px 18px 26px;
+  }
+
+  .total-budget .amount{
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: clamp(34px, 8vw, 46px);
+    font-weight: 700;
+    line-height: 1;
+    margin: 4px 0 2px;
+  }
+
+  .total-budget .label{
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ink-soft);
+  }
+
+  .split-row{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 18px;
+  }
+
+  .split-box{
+    border-radius: 12px;
+    padding: 14px;
+    text-align:center;
+  }
+
+  .split-box.zhenya{ background: var(--zhenya-bg); }
+  .split-box.roditeli{ background: var(--roditeli-bg); }
+
+  .split-box .name{
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  .split-box.zhenya .name{ color: var(--zhenya); }
+  .split-box.roditeli .name{ color: var(--roditeli); }
+
+  .split-box .value{
+    font-size: clamp(20px, 5vw, 26px);
+    font-weight: 700;
+    font-family: Georgia, serif;
+  }
+
+  .income-form{
+    display:flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  input[type=number], input[type=text]{
+    flex: 1 1 140px;
+    min-width: 0;
+    padding: 11px 12px;
+    border-radius: 9px;
+    border: 1px solid var(--line);
+    background: #fff;
+    font-size: 15px;
+    color: var(--ink);
+  }
+  input:focus{
+    outline: 2px solid var(--good);
+    outline-offset: 1px;
+  }
+
+  button{
+    border: none;
+    border-radius: 9px;
+    padding: 11px 16px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    background: var(--ink);
+    color: #fff;
+    transition: transform .08s ease, opacity .15s ease;
+  }
+  button:active{ transform: scale(0.97); }
+  button.income-btn{ background: var(--good); }
+
+  .columns{
+    display:grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+
+  @media (max-width: 720px){
+    .columns{ grid-template-columns: 1fr; }
+    .split-row{ grid-template-columns: 1fr; }
+  }
+
+  .col{
+    border-radius: 12px;
+    padding: 14px;
+    display:flex;
+    flex-direction:column;
+    min-height: 0;
+  }
+  .col.zhenya{ background: var(--zhenya-bg); }
+  .col.roditeli{ background: var(--roditeli-bg); }
+  .col.shared{ background: var(--shared-bg); }
+
+  .col h3{
+    margin: 0 0 10px;
+    font-size: 14px;
+    font-weight: 700;
+  }
+  .col.zhenya h3{ color: var(--zhenya); }
+  .col.roditeli h3{ color: var(--roditeli); }
+  .col.shared h3{ color: var(--shared); }
+
+  .col form{
+    display:flex;
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+  .col form input{ padding: 9px 10px; font-size: 14px; }
+  .col form button{ padding: 9px 12px; font-size: 13px; }
+  .col.zhenya form button{ background: var(--zhenya); }
+  .col.roditeli form button{ background: var(--roditeli); }
+  .col.shared form button{ background: var(--shared); }
+
+  .col .sum{
+    font-size: 22px;
+    font-weight: 700;
+    font-family: Georgia, serif;
+    margin-bottom: 8px;
+  }
+
+  .col ul{
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    overflow-y: auto;
+    max-height: 220px;
+    flex: 1;
+  }
+
+  .col li{
+    display:flex;
+    justify-content: space-between;
+    align-items:center;
+    background: rgba(255,255,255,0.55);
+    border-radius: 7px;
+    padding: 7px 9px;
+    margin-bottom: 6px;
+    font-size: 13px;
+  }
+
+  .col li .del{
+    background: none;
+    color: var(--ink-soft);
+    padding: 0 4px;
+    font-size: 15px;
+    line-height: 1;
+  }
+
+  .empty-hint{
+    font-size: 12px;
+    color: var(--ink-soft);
+    padding: 6px 2px;
+  }
+
+  select{
+    padding: 11px 12px;
+    border-radius: 9px;
+    border: 1px solid var(--line);
+    background: #fff;
+    font-size: 14px;
+    color: var(--ink);
+  }
+
+  .income-list{
+    list-style: none;
+    margin: 12px 0 0;
+    padding: 0;
+    max-height: 200px;
+    overflow-y: auto;
+  }
+  .income-list li{
+    display:flex;
+    justify-content: space-between;
+    align-items:center;
+    background: var(--bg);
+    border-radius: 8px;
+    padding: 8px 10px;
+    margin-bottom: 6px;
+    font-size: 13px;
+  }
+  .income-list .actions{ display:flex; gap: 4px; }
+  .income-list .edit, .income-list .del{
+    background: none;
+    color: var(--ink-soft);
+    padding: 0 5px;
+    font-size: 14px;
+  }
+
+  .withdraw-columns{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  @media (max-width: 720px){
+    .withdraw-columns{ grid-template-columns: 1fr; }
+  }
+  .withdraw-col{
+    border-radius: 12px;
+    padding: 14px;
+  }
+  .withdraw-col.zhenya{ background: var(--zhenya-bg); }
+  .withdraw-col.roditeli{ background: var(--roditeli-bg); }
+  .withdraw-col h3{
+    margin: 0 0 10px;
+    font-size: 14px;
+    font-weight: 700;
+  }
+  .withdraw-col.zhenya h3{ color: var(--zhenya); }
+  .withdraw-col.roditeli h3{ color: var(--roditeli); }
+  .withdraw-col form{
+    display:flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 8px;
+  }
+  .withdraw-col form input{ padding: 9px 10px; font-size: 14px; }
+  .withdraw-col form button{ padding: 9px 12px; font-size: 13px; }
+  .withdraw-col.zhenya form button{ background: var(--zhenya); }
+  .withdraw-col.roditeli form button{ background: var(--roditeli); }
+  .withdraw-col .sum{
+    font-size: 20px;
+    font-weight: 700;
+    font-family: Georgia, serif;
+  }
+
+  .transfer-form{
+    display:flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items:center;
+  }
+  .transfer-form select, .transfer-form input{ flex: 1 1 140px; }
+
+  .history-list{
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    max-height: 320px;
+    overflow-y: auto;
+  }
+  .history-item{
+    display:flex;
+    justify-content: space-between;
+    align-items:center;
+    background: var(--bg);
+    border-radius: 9px;
+    padding: 9px 11px;
+    margin-bottom: 7px;
+    font-size: 13px;
+    gap: 8px;
+  }
+  .history-item .info{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  .badge{
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 3px 8px;
+    border-radius: 20px;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+  .badge.w-zhenya{ background: var(--zhenya-bg); color: var(--zhenya); }
+  .badge.w-roditeli{ background: var(--roditeli-bg); color: var(--roditeli); }
+  .badge.transfer{ background: var(--shared-bg); color: var(--shared); }
+
+  .cloud-status{
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    color: var(--ink-soft);
+  }
+  .cloud-form{
+    display:flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .cloud-form textarea{
+    padding: 11px 12px;
+    border-radius: 9px;
+    border: 1px solid var(--line);
+    background: #fff;
+    font-size: 13px;
+    font-family: ui-monospace, "SF Mono", Consolas, monospace;
+    color: var(--ink);
+    resize: vertical;
+  }
+  .cloud-form-buttons{
+    display:flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .cloud-connected-actions{
+    display:flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .cloud-connected-actions button{
+    background: transparent;
+    color: var(--ink-soft);
+    border: 1px solid var(--line);
+    font-weight: 500;
+  }
+  .cloud-help{
+    margin-top: 14px;
+    font-size: 13px;
+    color: var(--ink-soft);
+  }
+  .cloud-help summary{
+    cursor: pointer;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .cloud-help ol{
+    margin: 10px 0 0;
+    padding-left: 18px;
+    line-height: 1.6;
+  }
+  .cloud-help code{
+    background: var(--bg);
+    padding: 1px 5px;
+    border-radius: 4px;
+    font-size: 12px;
+  }
+
+  .footer-actions{
+    display:flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 22px;
+  }
+
+  .footer-actions button{
+    background: transparent;
+    color: var(--ink-soft);
+    border: 1px solid var(--line);
+    font-weight: 500;
+  }
+
+  .note{
+    text-align:center;
+    font-size: 12px;
+    color: var(--ink-soft);
+    max-width: 480px;
+    margin: 14px auto 0;
+    line-height: 1.5;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div>
+      <div class="eyebrow">Семейный бюджет</div>
+      <h1>Женя и Родители</h1>
+    </div>
+    <div class="last-saved" id="lastSaved"></div>
+  </header>
+
+  <!-- ОБЛАЧНАЯ СИНХРОНИЗАЦИЯ -->
+  <div class="card">
+    <h2>Синхронизация между устройствами</h2>
+    <div class="cloud-status" id="cloudStatus">Проверяем настройки…</div>
+
+    <div class="cloud-form" id="cloudSetupForm">
+      <textarea id="cloudConfigInput" rows="4" placeholder='Вставьте сюда конфигурацию Firebase, например:
+{"apiKey":"...","authDomain":"...","projectId":"...","storageBucket":"...","messagingSenderId":"...","appId":"..."}'></textarea>
+      <div class="cloud-form-buttons">
+        <button id="cloudPasteBtn" type="button">Вставить из буфера обмена</button>
+        <button id="cloudConnectBtn" type="button">Подключить</button>
+      </div>
+    </div>
+
+    <div class="cloud-connected-actions" id="cloudConnectedActions" style="display:none;">
+      <button id="cloudCopyBtn" type="button">Скопировать конфигурацию для другого устройства</button>
+      <button id="cloudDisconnectBtn" type="button">Отключить облако</button>
+    </div>
+
+    <details class="cloud-help">
+      <summary>Как получить конфигурацию Firebase (один раз, бесплатно)</summary>
+      <ol>
+        <li>Откройте <a href="https://console.firebase.google.com" target="_blank" rel="noopener">console.firebase.google.com</a> и войдите с Google-аккаунтом.</li>
+        <li>Нажмите «Add project» / «Добавить проект», задайте любое имя, аналитику можно отключить.</li>
+        <li>В меню слева откройте «Build → Firestore Database» → «Create database» → выберите режим <b>test mode</b> и любой регион.</li>
+        <li>В настройках проекта (значок шестерёнки → Project settings) в разделе «Your apps» нажмите «</> Web» и зарегистрируйте приложение (имя любое, хостинг не нужен).</li>
+        <li>Firebase покажет объект <code>firebaseConfig</code> — скопируйте его целиком (от <code>{</code> до <code>}</code>) и вставьте в поле выше.</li>
+        <li>На втором устройстве откройте этот же файл и вставьте <b>ту же самую</b> конфигурацию — тогда оба устройства будут работать с одними и теми же данными.</li>
+      </ol>
+    </details>
+  </div>
+
+  <!-- ОБЩИЙ БЮДЖЕТ -->
+  <div class="card total-budget">
+    <div class="label">Общий бюджет</div>
+    <div class="amount" id="totalBudget">0</div>
+
+    <div class="split-row">
+      <div class="split-box zhenya">
+        <div class="name">Женя</div>
+        <div class="value" id="zhenyaBalance">0</div>
+      </div>
+      <div class="split-box roditeli">
+        <div class="name">Родители</div>
+        <div class="value" id="roditeliBalance">0</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ДОХОДЫ -->
+  <div class="card">
+    <h2>Добавить доход</h2>
+    <form class="income-form" id="incomeForm">
+      <input type="number" inputmode="decimal" step="0.01" min="0" id="incomeAmount" placeholder="Сумма дохода" required>
+      <input type="text" id="incomeNote" placeholder="Комментарий (необязательно)">
+      <button type="submit" class="income-btn">+ Доход</button>
+    </form>
+    <ul class="income-list" id="list-incomes"></ul>
+  </div>
+
+  <!-- РАСХОДЫ -->
+  <div class="card">
+    <h2>Расходы</h2>
+    <div class="columns">
+
+      <div class="col zhenya">
+        <h3>Женя</h3>
+        <form data-target="zhenya">
+          <input type="number" inputmode="decimal" step="0.01" min="0" placeholder="Сумма" required>
+          <button type="submit">+</button>
+        </form>
+        <div class="sum" id="sum-zhenya">0</div>
+        <ul id="list-zhenya"></ul>
+      </div>
+
+      <div class="col roditeli">
+        <h3>Родители</h3>
+        <form data-target="roditeli">
+          <input type="number" inputmode="decimal" step="0.01" min="0" placeholder="Сумма" required>
+          <button type="submit">+</button>
+        </form>
+        <div class="sum" id="sum-roditeli">0</div>
+        <ul id="list-roditeli"></ul>
+      </div>
+
+      <div class="col shared">
+        <h3>Из общего бюджета</h3>
+        <form data-target="shared">
+          <input type="number" inputmode="decimal" step="0.01" min="0" placeholder="Сумма" required>
+          <button type="submit">+</button>
+        </form>
+        <div class="sum" id="sum-shared">0</div>
+        <ul id="list-shared"></ul>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ЕЖЕНЕДЕЛЬНЫЙ ВЫВОД -->
+  <div class="card">
+    <h2>Еженедельный вывод</h2>
+    <div class="withdraw-columns">
+
+      <div class="withdraw-col zhenya">
+        <h3>Вывод — Женя</h3>
+        <form data-target="zhenya">
+          <input type="number" inputmode="decimal" step="0.01" min="0" placeholder="Сумма" required>
+          <input type="text" placeholder="Комментарий">
+          <button type="submit">Вывести</button>
+        </form>
+        <div class="sum" id="sum-withdraw-zhenya">0</div>
+      </div>
+
+      <div class="withdraw-col roditeli">
+        <h3>Вывод — Родители</h3>
+        <form data-target="roditeli">
+          <input type="number" inputmode="decimal" step="0.01" min="0" placeholder="Сумма" required>
+          <input type="text" placeholder="Комментарий">
+          <button type="submit">Вывести</button>
+        </form>
+        <div class="sum" id="sum-withdraw-roditeli">0</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ПЕРЕВОД МЕЖДУ ЖЕНЕЙ И РОДИТЕЛЯМИ -->
+  <div class="card">
+    <h2>Перевод между Женя и Родители</h2>
+    <form class="transfer-form" id="transferForm">
+      <select id="transferDirection">
+        <option value="zhenya-roditeli">Женя → Родители</option>
+        <option value="roditeli-zhenya">Родители → Женя</option>
+      </select>
+      <input type="number" inputmode="decimal" step="0.01" min="0" id="transferAmount" placeholder="Сумма" required>
+      <input type="text" id="transferNote" placeholder="Комментарий (необязательно)">
+      <button type="submit">Перевести</button>
+    </form>
+  </div>
+
+  <!-- ИСТОРИЯ ВЫВОДОВ И ПЕРЕВОДОВ -->
+  <div class="card">
+    <h2>История выводов и переводов</h2>
+    <ul class="history-list" id="historyList"></ul>
+  </div>
+
+  <div class="footer-actions">
+    <button id="exportBtn">Скачать резервную копию</button>
+    <button id="importBtn">Загрузить резервную копию</button>
+    <button id="resetBtn">Сбросить всё</button>
+    <input type="file" id="importFile" accept="application/json" style="display:none">
+  </div>
+
+  <p class="note">
+    Это обычный HTML-файл без своего сервера. По умолчанию данные хранятся в этом браузере
+    (localStorage). Если подключить бесплатное облако Firebase в блоке выше — данные будут
+    автоматически синхронизироваться между всеми устройствами, где вставлена та же конфигурация,
+    а «Скачать/Загрузить резервную копию» останутся как ручной способ переноса данных на всякий случай.
+  </p>
+
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getFirestore, doc, setDoc, onSnapshot,
+  enableIndexedDbPersistence
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+(function(){
+  const STORAGE_KEY = 'family-budget-v1';
+  const CONFIG_KEY = 'family-budget-firebase-config';
+  const DOC_PATH = ['budget', 'family'];
+
+  let cloudEnabled = false;
+  let db = null;
+  let docRef = null;
+  let applyingRemote = false; // guard to avoid write-loop while applying incoming snapshot
+
+  function emptyData(){
+    return {
+
+      incomes: [],
+      expenses: { zhenya: [], roditeli: [], shared: [] },
+      withdrawals: { zhenya: [], roditeli: [] },
+      transfers: []
+    };
+  }
+
+  function load(){
+    try{
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if(!raw) return emptyData();
+      const parsed = JSON.parse(raw);
+      return normalizeData(parsed);
+    }catch(e){
+      console.error('Ошибка чтения localStorage', e);
+      return emptyData();
+    }
+  }
+
+  function normalizeData(parsed){
+    return {
+      incomes: parsed.incomes || [],
+      expenses: {
+        zhenya: (parsed.expenses && parsed.expenses.zhenya) || [],
+        roditeli: (parsed.expenses && parsed.expenses.roditeli) || [],
+        shared: (parsed.expenses && parsed.expenses.shared) || []
+      },
+      withdrawals: {
+        zhenya: (parsed.withdrawals && parsed.withdrawals.zhenya) || [],
+        roditeli: (parsed.withdrawals && parsed.withdrawals.roditeli) || []
+      },
+      transfers: parsed.transfers || []
+    };
+  }
+
+  function save(){
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    document.getElementById('lastSaved').textContent =
+      'Сохранено ' + new Date().toLocaleTimeString('ru-RU', {hour:'2-digit', minute:'2-digit'});
+
+    if(cloudEnabled && docRef && !applyingRemote){
+      setDoc(docRef, data).catch(err=>{
+        console.error('Ошибка записи в облако', err);
+        setCloudStatus('Ошибка синхронизации: ' + err.message, true);
+      });
+    }
+  }
+
+  let data = load();
+
+  function fmt(n){
+    return n.toLocaleString('ru-RU', {maximumFractionDigits: 2});
+  }
+
+  function sum(arr){
+    return arr.reduce((a,b)=>a + b.amount, 0);
+  }
+
+  function render(){
+    const totalIncome = sum(data.incomes);
+    const zhenyaExp = sum(data.expenses.zhenya);
+    const roditeliExp = sum(data.expenses.roditeli);
+    const sharedExp = sum(data.expenses.shared);
+    const zhenyaWithdraw = sum(data.withdrawals.zhenya);
+    const roditeliWithdraw = sum(data.withdrawals.roditeli);
+
+    let zhenyaBalance = totalIncome/2 - zhenyaExp - sharedExp/2 - zhenyaWithdraw;
+    let roditeliBalance = totalIncome/2 - roditeliExp - sharedExp/2 - roditeliWithdraw;
+
+    data.transfers.forEach(t=>{
+      if(t.from === 'zhenya'){ zhenyaBalance -= t.amount; roditeliBalance += t.amount; }
+      else { roditeliBalance -= t.amount; zhenyaBalance += t.amount; }
+    });
+
+    document.getElementById('totalBudget').textContent = fmt(zhenyaBalance + roditeliBalance);
+    document.getElementById('zhenyaBalance').textContent = fmt(zhenyaBalance);
+    document.getElementById('roditeliBalance').textContent = fmt(roditeliBalance);
+
+    document.getElementById('sum-zhenya').textContent = fmt(zhenyaExp);
+    document.getElementById('sum-roditeli').textContent = fmt(roditeliExp);
+    document.getElementById('sum-shared').textContent = fmt(sharedExp);
+
+    document.getElementById('sum-withdraw-zhenya').textContent = fmt(zhenyaWithdraw);
+    document.getElementById('sum-withdraw-roditeli').textContent = fmt(roditeliWithdraw);
+
+    renderList('zhenya');
+    renderList('roditeli');
+    renderList('shared');
+    renderIncomeList();
+    renderHistory();
+  }
+
+  function renderIncomeList(){
+    const ul = document.getElementById('list-incomes');
+    ul.innerHTML = '';
+    if(data.incomes.length === 0){
+      const hint = document.createElement('div');
+      hint.className = 'empty-hint';
+      hint.textContent = 'Пока нет доходов';
+      ul.appendChild(hint);
+      return;
+    }
+    data.incomes.slice().reverse().forEach(item=>{
+      const li = document.createElement('li');
+      const left = document.createElement('span');
+      left.textContent = (item.note ? item.note + ' — ' : '') + fmt(item.amount);
+
+      const actions = document.createElement('span');
+      actions.className = 'actions';
+
+      const edit = document.createElement('button');
+      edit.className = 'edit';
+      edit.textContent = '✎';
+      edit.title = 'Скорректировать';
+      edit.addEventListener('click', ()=>{
+        const newAmountRaw = prompt('Новая сумма дохода:', item.amount);
+        if(newAmountRaw === null) return;
+        const newAmount = parseFloat(newAmountRaw);
+        if(isNaN(newAmount) || newAmount < 0) { alert('Некорректная сумма'); return; }
+        const newNote = prompt('Комментарий:', item.note || '');
+        item.amount = newAmount;
+        item.note = (newNote || '').trim();
+        save();
+        render();
+      });
+
+      const del = document.createElement('button');
+      del.className = 'del';
+      del.textContent = '×';
+      del.title = 'Удалить';
+      del.addEventListener('click', ()=>{
+        data.incomes = data.incomes.filter(x=>x.id !== item.id);
+        save();
+        render();
+      });
+
+      actions.appendChild(edit);
+      actions.appendChild(del);
+      li.appendChild(left);
+      li.appendChild(actions);
+      ul.appendChild(li);
+    });
+  }
+
+  function renderHistory(){
+    const ul = document.getElementById('historyList');
+    ul.innerHTML = '';
+
+    const entries = [];
+
+    data.withdrawals.zhenya.forEach(w=>{
+      entries.push({ id: w.id, date: w.date, amount: w.amount, note: w.note,
+        badgeClass: 'w-zhenya', badgeText: 'Вывод — Женя',
+        remove: ()=>{ data.withdrawals.zhenya = data.withdrawals.zhenya.filter(x=>x.id!==w.id); } });
+    });
+    data.withdrawals.roditeli.forEach(w=>{
+      entries.push({ id: w.id, date: w.date, amount: w.amount, note: w.note,
+        badgeClass: 'w-roditeli', badgeText: 'Вывод — Родители',
+        remove: ()=>{ data.withdrawals.roditeli = data.withdrawals.roditeli.filter(x=>x.id!==w.id); } });
+    });
+    data.transfers.forEach(t=>{
+      const label = t.from === 'zhenya' ? 'Женя → Родители' : 'Родители → Женя';
+      entries.push({ id: t.id, date: t.date, amount: t.amount, note: t.note,
+        badgeClass: 'transfer', badgeText: 'Перевод: ' + label,
+        remove: ()=>{ data.transfers = data.transfers.filter(x=>x.id!==t.id); } });
+    });
+
+    entries.sort((a,b)=> new Date(b.date) - new Date(a.date));
+
+    if(entries.length === 0){
+      const hint = document.createElement('div');
+      hint.className = 'empty-hint';
+      hint.textContent = 'Пока нет выводов и переводов';
+      ul.appendChild(hint);
+      return;
+    }
+
+    entries.forEach(entry=>{
+      const li = document.createElement('li');
+      li.className = 'history-item';
+
+      const info = document.createElement('span');
+      info.className = 'info';
+      const badge = document.createElement('span');
+      badge.className = 'badge ' + entry.badgeClass;
+      badge.textContent = entry.badgeText;
+      const text = document.createElement('span');
+      text.textContent = fmt(entry.amount) + (entry.note ? ' — ' + entry.note : '');
+      info.appendChild(badge);
+      info.appendChild(text);
+
+      const del = document.createElement('button');
+      del.className = 'del';
+      del.textContent = '×';
+      del.title = 'Удалить';
+      del.addEventListener('click', ()=>{
+        entry.remove();
+        save();
+        render();
+      });
+
+      li.appendChild(info);
+      li.appendChild(del);
+      ul.appendChild(li);
+    });
+  }
+
+  function renderList(key){
+    const ul = document.getElementById('list-' + key);
+    const items = data.expenses[key];
+    ul.innerHTML = '';
+    if(items.length === 0){
+      const hint = document.createElement('div');
+      hint.className = 'empty-hint';
+      hint.textContent = 'Пока нет расходов';
+      ul.appendChild(hint);
+      return;
+    }
+    items.slice().reverse().forEach(item=>{
+      const li = document.createElement('li');
+      const left = document.createElement('span');
+      left.textContent = (item.note ? item.note + ' — ' : '') + fmt(item.amount);
+      const del = document.createElement('button');
+      del.className = 'del';
+      del.textContent = '×';
+      del.title = 'Удалить';
+      del.addEventListener('click', ()=>{
+        data.expenses[key] = data.expenses[key].filter(x=>x.id !== item.id);
+        save();
+        render();
+      });
+      li.appendChild(left);
+      li.appendChild(del);
+      ul.appendChild(li);
+    });
+  }
+
+  function uid(){
+    return Date.now().toString(36) + Math.random().toString(36).slice(2,7);
+  }
+
+  // Доход
+  document.getElementById('incomeForm').addEventListener('submit', function(e){
+    e.preventDefault();
+    const amountInput = document.getElementById('incomeAmount');
+    const noteInput = document.getElementById('incomeNote');
+    const amount = parseFloat(amountInput.value);
+    if(!amount || amount <= 0) return;
+    data.incomes.push({ id: uid(), amount, note: noteInput.value.trim(), date: new Date().toISOString() });
+    amountInput.value = '';
+    noteInput.value = '';
+    save();
+    render();
+  });
+
+  // Расходы (3 формы)
+  document.querySelectorAll('.col form').forEach(form=>{
+    form.addEventListener('submit', function(e){
+      e.preventDefault();
+      const key = form.getAttribute('data-target');
+      const input = form.querySelector('input');
+      const amount = parseFloat(input.value);
+      if(!amount || amount <= 0) return;
+      data.expenses[key].push({ id: uid(), amount, date: new Date().toISOString() });
+      input.value = '';
+      save();
+      render();
+    });
+  });
+
+  // Еженедельный вывод (2 формы)
+  document.querySelectorAll('.withdraw-col form').forEach(form=>{
+    form.addEventListener('submit', function(e){
+      e.preventDefault();
+      const key = form.getAttribute('data-target');
+      const amountInput = form.querySelector('input[type=number]');
+      const noteInput = form.querySelector('input[type=text]');
+      const amount = parseFloat(amountInput.value);
+      if(!amount || amount <= 0) return;
+      data.withdrawals[key].push({ id: uid(), amount, note: noteInput.value.trim(), date: new Date().toISOString() });
+      amountInput.value = '';
+      noteInput.value = '';
+      save();
+      render();
+    });
+  });
+
+  // Перевод между Женя и Родители
+  document.getElementById('transferForm').addEventListener('submit', function(e){
+    e.preventDefault();
+    const direction = document.getElementById('transferDirection').value;
+    const amountInput = document.getElementById('transferAmount');
+    const noteInput = document.getElementById('transferNote');
+    const amount = parseFloat(amountInput.value);
+    if(!amount || amount <= 0) return;
+    const from = direction === 'zhenya-roditeli' ? 'zhenya' : 'roditeli';
+    const to = from === 'zhenya' ? 'roditeli' : 'zhenya';
+    data.transfers.push({ id: uid(), amount, from, to, note: noteInput.value.trim(), date: new Date().toISOString() });
+    amountInput.value = '';
+    noteInput.value = '';
+    save();
+    render();
+  });
+
+  // Экспорт
+  document.getElementById('exportBtn').addEventListener('click', ()=>{
+    const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const stamp = new Date().toISOString().slice(0,10);
+    a.href = url;
+    a.download = 'budget-backup-' + stamp + '.json';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  });
+
+  // Импорт
+  const importFile = document.getElementById('importFile');
+  document.getElementById('importBtn').addEventListener('click', ()=> importFile.click());
+  importFile.addEventListener('change', (e)=>{
+    const file = e.target.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = function(ev){
+      try{
+        const parsed = JSON.parse(ev.target.result);
+        data = normalizeData(parsed);
+        save();
+        render();
+        alert('Резервная копия загружена');
+      }catch(err){
+        alert('Не удалось прочитать файл: неверный формат');
+      }
+    };
+    reader.readAsText(file);
+    importFile.value = '';
+  });
+
+  // Сброс
+  document.getElementById('resetBtn').addEventListener('click', ()=>{
+    if(confirm('Точно удалить все данные (доходы и расходы) без возможности восстановления)?')){
+      data = emptyData();
+      save();
+      render();
+    }
+  });
+
+  // ===== Облачная синхронизация (Firebase) =====
+
+  function setCloudStatus(text, isError){
+    const el = document.getElementById('cloudStatus');
+    el.textContent = text;
+    el.style.color = isError ? '#B9564A' : '#3E7A52';
+  }
+
+  function showConnectedUI(){
+    document.getElementById('cloudSetupForm').style.display = 'none';
+    document.getElementById('cloudConnectedActions').style.display = 'flex';
+  }
+  function showDisconnectedUI(){
+    document.getElementById('cloudSetupForm').style.display = 'flex';
+    document.getElementById('cloudConnectedActions').style.display = 'none';
+  }
+
+  function parseConfigInput(str){
+    let s = str.trim();
+    // убираем невидимые символы, которые иногда добавляет мобильная вставка (BOM, zero-width space)
+    s = s.replace(/[\u200B-\u200D\uFEFF]/g, '');
+    // заменяем "умные" кавычки на обычные — телефон часто подставляет их сам
+    s = s.replace(/[\u201C\u201D\u201E\u201F]/g, '"').replace(/[\u2018\u2019\u201A\u201B]/g, "'");
+    // убираем возможные обёртки вроде "const firebaseConfig = {...};" или "export default {...}"
+    s = s.replace(/^\s*(export\s+default\s+|module\.exports\s*=\s*|const\s+\w+\s*=\s*|let\s+\w+\s*=\s*|var\s+\w+\s*=\s*)/, '');
+    s = s.replace(/;\s*$/, '');
+
+    try{
+      return JSON.parse(s);
+    }catch(e){
+      // не строгий JSON (например, ключи без кавычек) — пробуем прочитать как JS-объект
+      try{
+        return Function('"use strict"; return (' + s + ')')();
+      }catch(e2){
+        return null;
+      }
+    }
+  }
+
+  async function connectCloud(configStr, isReconnect){
+    if(!configStr || !configStr.trim()){
+      alert('Поле с конфигурацией пустое. Вставьте туда объект из Firebase (apiKey, projectId и т.д.) и нажмите «Подключить» ещё раз.');
+      return;
+    }
+    const config = parseConfigInput(configStr);
+    if(!config || typeof config !== 'object' || !config.apiKey || !config.projectId){
+      alert('Не удалось прочитать конфигурацию — проверьте, что вставлен объект с полями apiKey, projectId и т.д.');
+      return;
+    }
+    try{
+      const app = initializeApp(config, 'family-budget-app');
+      db = getFirestore(app);
+      try{ await enableIndexedDbPersistence(db); }catch(e){ /* не критично, например если открыто в нескольких вкладках */ }
+
+      docRef = doc(db, DOC_PATH[0], DOC_PATH[1]);
+      cloudEnabled = true;
+      localStorage.setItem(CONFIG_KEY, configStr);
+
+      onSnapshot(docRef, (snap)=>{
+        if(snap.exists()){
+          applyingRemote = true;
+          data = normalizeData(snap.data());
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+          render();
+          applyingRemote = false;
+          setCloudStatus('Подключено — данные синхронизируются между устройствами');
+        } else {
+          // документа ещё нет — создаём его текущими локальными данными
+          setDoc(docRef, data).catch(err=>console.error(err));
+        }
+      }, (err)=>{
+        console.error('Ошибка синхронизации', err);
+        setCloudStatus('Ошибка подключения: ' + err.message, true);
+      });
+
+      showConnectedUI();
+      if(!isReconnect) setCloudStatus('Подключаемся…');
+    }catch(e){
+      console.error(e);
+      alert('Не удалось подключиться. Проверьте конфигурацию Firebase.\n\n' + e.message);
+    }
+  }
+
+  function disconnectCloud(){
+    cloudEnabled = false;
+    db = null;
+    docRef = null;
+    localStorage.removeItem(CONFIG_KEY);
+    showDisconnectedUI();
+    setCloudStatus('Облако отключено — работаем только локально в этом браузере');
+  }
+
+  document.getElementById('cloudConnectBtn').addEventListener('click', ()=>{
+    const configStr = document.getElementById('cloudConfigInput').value;
+    connectCloud(configStr, false);
+  });
+
+  document.getElementById('cloudPasteBtn').addEventListener('click', async ()=>{
+    try{
+      const text = await navigator.clipboard.readText();
+      if(!text || !text.trim()){
+        alert('В буфере обмена ничего не найдено. Скопируйте конфигурацию Firebase и попробуйте ещё раз.');
+        return;
+      }
+      document.getElementById('cloudConfigInput').value = text;
+      alert('Вставлено. Проверьте текст в поле и нажмите «Подключить».');
+    }catch(e){
+      alert('Браузер не разрешил автоматическую вставку. Вставьте текст вручную долгим нажатием на поле и выбором «Вставить».');
+    }
+  });
+
+  document.getElementById('cloudDisconnectBtn').addEventListener('click', ()=>{
+    if(confirm('Отключить синхронизацию с облаком на этом устройстве? Локальные данные останутся.')){
+      disconnectCloud();
+    }
+  });
+
+  document.getElementById('cloudCopyBtn').addEventListener('click', ()=>{
+    const configStr = localStorage.getItem(CONFIG_KEY) || '';
+    navigator.clipboard.writeText(configStr).then(()=>{
+      alert('Конфигурация скопирована. Вставьте её на другом устройстве в это же поле подключения.');
+    }).catch(()=>{
+      prompt('Скопируйте конфигурацию вручную:', configStr);
+    });
+  });
+
+  // Автоподключение, если конфигурация уже была сохранена ранее
+  const savedConfig = localStorage.getItem(CONFIG_KEY);
+  if(savedConfig){
+    document.getElementById('cloudConfigInput').value = savedConfig;
+    connectCloud(savedConfig, true);
+  } else {
+    setCloudStatus('Работаем локально в этом браузере (облако не подключено)');
+  }
+
+  render();
+})();
+</script>
+</body>
+</html>
