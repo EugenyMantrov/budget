@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
-<title>Бюджет</title>
+<title>Бюджет — Женя и Родители</title>
 <style>
   :root{
     --bg: #EEF1EA;
@@ -287,6 +287,12 @@
     font-size: 14px;
   }
 
+  .card-hint{
+    font-size: 12px;
+    color: var(--ink-soft);
+    margin: -8px 0 12px;
+  }
+
   .withdraw-columns{
     display:grid;
     grid-template-columns: 1fr 1fr;
@@ -453,7 +459,8 @@
 
   <header>
     <div>
-      <h1>Бюджет Wildberries</h1>
+      <div class="eyebrow">Семейный бюджет</div>
+      <h1>Женя и Родители</h1>
     </div>
     <div class="last-saved" id="lastSaved"></div>
   </header>
@@ -556,29 +563,59 @@
     </div>
   </div>
 
-  <!-- ЕЖЕНЕДЕЛЬНЫЙ ВЫВОД -->
+  <!-- ЕЖЕНЕДЕЛЬНЫЙ ВЫВОД С WB (ПОПОЛНЕНИЕ ДОХОДА) -->
   <div class="card">
-    <h2>Еженедельный вывод</h2>
-    <div class="withdraw-columns">
+    <h2>Еженедельный вывод с WB</h2>
+    <p class="card-hint">Это поступление денег с Wildberries — добавляется в общий доход и делится пополам, как обычный доход.</p>
+    <div class="withdraw-columns wb-columns">
 
       <div class="withdraw-col zhenya">
-        <h3>Вывод — Женя</h3>
+        <h3>Вывод с WB — Женя</h3>
         <form data-target="zhenya">
           <input type="number" inputmode="decimal" step="0.01" min="0" placeholder="Сумма" required>
           <input type="text" placeholder="Комментарий">
-          <button type="submit">Вывести</button>
+          <button type="submit">+ Пополнить доход</button>
         </form>
-        <div class="sum" id="sum-withdraw-zhenya">0</div>
+        <div class="sum" id="sum-wb-zhenya">0</div>
       </div>
 
       <div class="withdraw-col roditeli">
-        <h3>Вывод — Родители</h3>
+        <h3>Вывод с WB — Родители</h3>
         <form data-target="roditeli">
           <input type="number" inputmode="decimal" step="0.01" min="0" placeholder="Сумма" required>
           <input type="text" placeholder="Комментарий">
-          <button type="submit">Вывести</button>
+          <button type="submit">+ Пополнить доход</button>
         </form>
-        <div class="sum" id="sum-withdraw-roditeli">0</div>
+        <div class="sum" id="sum-wb-roditeli">0</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- СНЯТИЕ СО СЧЁТА В ЛИЧНЫХ ЦЕЛЯХ -->
+  <div class="card">
+    <h2>Снятие со счёта в личных целях</h2>
+    <p class="card-hint">Уменьшает личный доход того, кто снимает, а значит и общий бюджет.</p>
+    <div class="withdraw-columns personal-columns">
+
+      <div class="withdraw-col zhenya">
+        <h3>Снятие — Женя</h3>
+        <form data-target="zhenya">
+          <input type="number" inputmode="decimal" step="0.01" min="0" placeholder="Сумма" required>
+          <input type="text" placeholder="Комментарий">
+          <button type="submit">Снять</button>
+        </form>
+        <div class="sum" id="sum-personal-zhenya">0</div>
+      </div>
+
+      <div class="withdraw-col roditeli">
+        <h3>Снятие — Родители</h3>
+        <form data-target="roditeli">
+          <input type="number" inputmode="decimal" step="0.01" min="0" placeholder="Сумма" required>
+          <input type="text" placeholder="Комментарий">
+          <button type="submit">Снять</button>
+        </form>
+        <div class="sum" id="sum-personal-roditeli">0</div>
       </div>
 
     </div>
@@ -598,9 +635,9 @@
     </form>
   </div>
 
-  <!-- ИСТОРИЯ ВЫВОДОВ И ПЕРЕВОДОВ -->
+  <!-- ИСТОРИЯ СНЯТИЙ И ПЕРЕВОДОВ -->
   <div class="card">
-    <h2>История выводов и переводов</h2>
+    <h2>История снятий и переводов</h2>
     <ul class="history-list" id="historyList"></ul>
   </div>
 
@@ -612,7 +649,8 @@
   </div>
 
   <p class="note">
-    Если подключить бесплатное облако Firebase в блоке выше — данные будут
+    Это обычный HTML-файл без своего сервера. По умолчанию данные хранятся в этом браузере
+    (localStorage). Если подключить бесплатное облако Firebase в блоке выше — данные будут
     автоматически синхронизироваться между всеми устройствами, где вставлена та же конфигурация,
     а «Скачать/Загрузить резервную копию» останутся как ручной способ переноса данных на всякий случай.
   </p>
@@ -702,11 +740,14 @@ import {
     const zhenyaExp = sum(data.expenses.zhenya);
     const roditeliExp = sum(data.expenses.roditeli);
     const sharedExp = sum(data.expenses.shared);
-    const zhenyaWithdraw = sum(data.withdrawals.zhenya);
-    const roditeliWithdraw = sum(data.withdrawals.roditeli);
+    const zhenyaPersonalWithdraw = sum(data.withdrawals.zhenya);
+    const roditeliPersonalWithdraw = sum(data.withdrawals.roditeli);
 
-    let zhenyaBalance = totalIncome/2 - zhenyaExp - sharedExp/2 - zhenyaWithdraw;
-    let roditeliBalance = totalIncome/2 - roditeliExp - sharedExp/2 - roditeliWithdraw;
+    const wbZhenya = sum(data.incomes.filter(i => i.source === 'wb-zhenya'));
+    const wbRoditeli = sum(data.incomes.filter(i => i.source === 'wb-roditeli'));
+
+    let zhenyaBalance = totalIncome/2 - zhenyaExp - sharedExp/2 - zhenyaPersonalWithdraw;
+    let roditeliBalance = totalIncome/2 - roditeliExp - sharedExp/2 - roditeliPersonalWithdraw;
 
     data.transfers.forEach(t=>{
       if(t.from === 'zhenya'){ zhenyaBalance -= t.amount; roditeliBalance += t.amount; }
@@ -721,8 +762,11 @@ import {
     document.getElementById('sum-roditeli').textContent = fmt(roditeliExp);
     document.getElementById('sum-shared').textContent = fmt(sharedExp);
 
-    document.getElementById('sum-withdraw-zhenya').textContent = fmt(zhenyaWithdraw);
-    document.getElementById('sum-withdraw-roditeli').textContent = fmt(roditeliWithdraw);
+    document.getElementById('sum-wb-zhenya').textContent = fmt(wbZhenya);
+    document.getElementById('sum-wb-roditeli').textContent = fmt(wbRoditeli);
+
+    document.getElementById('sum-personal-zhenya').textContent = fmt(zhenyaPersonalWithdraw);
+    document.getElementById('sum-personal-roditeli').textContent = fmt(roditeliPersonalWithdraw);
 
     renderList('zhenya');
     renderList('roditeli');
@@ -744,7 +788,10 @@ import {
     data.incomes.slice().reverse().forEach(item=>{
       const li = document.createElement('li');
       const left = document.createElement('span');
-      left.textContent = (item.note ? item.note + ' — ' : '') + fmt(item.amount);
+      const sourceLabel = item.source === 'wb-zhenya' ? 'WB, Женя — '
+        : item.source === 'wb-roditeli' ? 'WB, Родители — '
+        : '';
+      left.textContent = sourceLabel + (item.note ? item.note + ' — ' : '') + fmt(item.amount);
 
       const actions = document.createElement('span');
       actions.className = 'actions';
@@ -791,12 +838,12 @@ import {
 
     data.withdrawals.zhenya.forEach(w=>{
       entries.push({ id: w.id, date: w.date, amount: w.amount, note: w.note,
-        badgeClass: 'w-zhenya', badgeText: 'Вывод — Женя',
+        badgeClass: 'w-zhenya', badgeText: 'Снятие — Женя',
         remove: ()=>{ data.withdrawals.zhenya = data.withdrawals.zhenya.filter(x=>x.id!==w.id); } });
     });
     data.withdrawals.roditeli.forEach(w=>{
       entries.push({ id: w.id, date: w.date, amount: w.amount, note: w.note,
-        badgeClass: 'w-roditeli', badgeText: 'Вывод — Родители',
+        badgeClass: 'w-roditeli', badgeText: 'Снятие — Родители',
         remove: ()=>{ data.withdrawals.roditeli = data.withdrawals.roditeli.filter(x=>x.id!==w.id); } });
     });
     data.transfers.forEach(t=>{
@@ -811,7 +858,7 @@ import {
     if(entries.length === 0){
       const hint = document.createElement('div');
       hint.className = 'empty-hint';
-      hint.textContent = 'Пока нет выводов и переводов';
+      hint.textContent = 'Пока нет снятий и переводов';
       ul.appendChild(hint);
       return;
     }
@@ -909,8 +956,29 @@ import {
     });
   });
 
-  // Еженедельный вывод (2 формы)
-  document.querySelectorAll('.withdraw-col form').forEach(form=>{
+  // Еженедельный вывод с WB — пополняет общий доход (делится пополам)
+  document.querySelectorAll('.wb-columns form').forEach(form=>{
+    form.addEventListener('submit', function(e){
+      e.preventDefault();
+      const key = form.getAttribute('data-target'); // 'zhenya' | 'roditeli'
+      const amountInput = form.querySelector('input[type=number]');
+      const noteInput = form.querySelector('input[type=text]');
+      const amount = parseFloat(amountInput.value);
+      if(!amount || amount <= 0) return;
+      data.incomes.push({
+        id: uid(), amount, note: noteInput.value.trim(),
+        source: key === 'zhenya' ? 'wb-zhenya' : 'wb-roditeli',
+        date: new Date().toISOString()
+      });
+      amountInput.value = '';
+      noteInput.value = '';
+      save();
+      render();
+    });
+  });
+
+  // Снятие со счёта в личных целях — уменьшает личный доход (и общий бюджет)
+  document.querySelectorAll('.personal-columns form').forEach(form=>{
     form.addEventListener('submit', function(e){
       e.preventDefault();
       const key = form.getAttribute('data-target');
