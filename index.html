@@ -203,10 +203,13 @@
 
   .col form{
     display:flex;
+    flex-wrap: wrap;
     gap: 6px;
     margin-bottom: 10px;
   }
   .col form input{ padding: 9px 10px; font-size: 14px; }
+  .col form input[type=number]{ flex: 1 1 90px; }
+  .col form input[type=text]{ flex: 1 1 100%; }
   .col form button{ padding: 9px 12px; font-size: 13px; }
   .col.zhenya form button{ background: var(--zhenya); }
   .col.roditeli form button{ background: var(--roditeli); }
@@ -237,9 +240,17 @@
     padding: 7px 9px;
     margin-bottom: 6px;
     font-size: 13px;
+    gap: 6px;
   }
 
-  .col li .del{
+  .col li .item-text{
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .col li .actions{ display:flex; gap: 2px; flex-shrink: 0; }
+
+  .col li .del, .col li .edit{
     background: none;
     color: var(--ink-soft);
     padding: 0 4px;
@@ -292,6 +303,14 @@
     color: var(--ink-soft);
     margin: -8px 0 12px;
   }
+
+  .expenses-history-title{
+    font-size: 14px;
+    font-weight: 700;
+    margin: 18px 0 10px;
+    color: var(--ink);
+  }
+  .income-list .badge{ margin-right: 2px; }
 
   .withdraw-columns{
     display:grid;
@@ -357,6 +376,17 @@
     gap: 8px;
   }
   .history-item .info{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  .history-item .actions{ display:flex; gap: 2px; flex-shrink: 0; }
+  .history-item .edit, .history-item .del{
+    background: none;
+    color: var(--ink-soft);
+    padding: 0 5px;
+    font-size: 14px;
+  }
+  .history-item .date{
+    font-size: 11px;
+    color: var(--ink-soft);
+  }
   .badge{
     font-size: 10px;
     text-transform: uppercase;
@@ -369,6 +399,27 @@
   .badge.w-zhenya{ background: var(--zhenya-bg); color: var(--zhenya); }
   .badge.w-roditeli{ background: var(--roditeli-bg); color: var(--roditeli); }
   .badge.transfer{ background: var(--shared-bg); color: var(--shared); }
+  .badge.e-zhenya{ background: var(--zhenya-bg); color: var(--zhenya); }
+  .badge.e-roditeli{ background: var(--roditeli-bg); color: var(--roditeli); }
+  .badge.e-shared{ background: var(--shared-bg); color: var(--shared); }
+
+  .history-filters{
+    display:flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+  }
+  .history-filters button{
+    background: var(--bg);
+    color: var(--ink-soft);
+    font-size: 12px;
+    padding: 7px 12px;
+    font-weight: 600;
+  }
+  .history-filters button.active{
+    background: var(--ink);
+    color: #fff;
+  }
 
   .cloud-status{
     font-size: 13px;
@@ -513,26 +564,17 @@
     </div>
   </div>
 
-  <!-- ДОХОДЫ -->
-  <div class="card">
-    <h2>Добавить доход</h2>
-    <form class="income-form" id="incomeForm">
-      <input type="number" inputmode="decimal" step="0.01" min="0" id="incomeAmount" placeholder="Сумма дохода" required>
-      <input type="text" id="incomeNote" placeholder="Комментарий (необязательно)">
-      <button type="submit" class="income-btn">+ Доход</button>
-    </form>
-    <ul class="income-list" id="list-incomes"></ul>
-  </div>
-
   <!-- РАСХОДЫ -->
   <div class="card">
     <h2>Расходы</h2>
+    <p class="card-hint">У каждого расхода можно указать комментарий, отредактировать сумму/комментарий позже (✎) или удалить (×). Все расходы также попадают в общую историю ниже.</p>
     <div class="columns">
 
       <div class="col zhenya">
         <h3>Женя</h3>
         <form data-target="zhenya">
           <input type="number" inputmode="decimal" step="0.01" min="0" placeholder="Сумма" required>
+          <input type="text" placeholder="Комментарий (необязательно)">
           <button type="submit">+</button>
         </form>
         <div class="sum" id="sum-zhenya">0</div>
@@ -543,6 +585,7 @@
         <h3>Родители</h3>
         <form data-target="roditeli">
           <input type="number" inputmode="decimal" step="0.01" min="0" placeholder="Сумма" required>
+          <input type="text" placeholder="Комментарий (необязательно)">
           <button type="submit">+</button>
         </form>
         <div class="sum" id="sum-roditeli">0</div>
@@ -553,6 +596,7 @@
         <h3>Из общего бюджета</h3>
         <form data-target="shared">
           <input type="number" inputmode="decimal" step="0.01" min="0" placeholder="Сумма" required>
+          <input type="text" placeholder="Комментарий (необязательно)">
           <button type="submit">+</button>
         </form>
         <div class="sum" id="sum-shared">0</div>
@@ -560,6 +604,9 @@
       </div>
 
     </div>
+
+    <h3 class="expenses-history-title">История расходов</h3>
+    <ul class="income-list" id="list-expenses-history"></ul>
   </div>
 
   <!-- ЕЖЕНЕДЕЛЬНЫЙ ВЫВОД С WB (ПОПОЛНЕНИЕ ДОХОДА) -->
@@ -589,6 +636,9 @@
       </div>
 
     </div>
+
+    <h3 class="expenses-history-title">История доходов</h3>
+    <ul class="income-list" id="list-incomes"></ul>
   </div>
 
   <!-- СНЯТИЕ СО СЧЁТА В ЛИЧНЫХ ЦЕЛЯХ -->
@@ -634,9 +684,16 @@
     </form>
   </div>
 
-  <!-- ИСТОРИЯ СНЯТИЙ И ПЕРЕВОДОВ -->
+  <!-- ИСТОРИЯ -->
   <div class="card">
-    <h2>История снятий и переводов</h2>
+    <h2>История</h2>
+    <p class="card-hint">Все расходы, снятия и переводы в одном месте. Можно отфильтровать, отредактировать (✎) или удалить (×) любую запись.</p>
+    <div class="history-filters" id="historyFilters">
+      <button type="button" class="active" data-filter="all">Все</button>
+      <button type="button" data-filter="expense">Расходы</button>
+      <button type="button" data-filter="withdraw">Снятия</button>
+      <button type="button" data-filter="transfer">Переводы</button>
+    </div>
     <ul class="history-list" id="historyList"></ul>
   </div>
 
@@ -672,6 +729,7 @@ import {
   let db = null;
   let docRef = null;
   let applyingRemote = false; // guard to avoid write-loop while applying incoming snapshot
+  let historyFilter = 'all';
 
   function emptyData(){
     return {
@@ -730,6 +788,12 @@ import {
     return n.toLocaleString('ru-RU', {maximumFractionDigits: 2});
   }
 
+  function fmtDate(iso){
+    if(!iso) return '';
+    const d = new Date(iso);
+    return d.toLocaleString('ru-RU', {day:'2-digit', month:'2-digit', year:'2-digit', hour:'2-digit', minute:'2-digit'});
+  }
+
   function sum(arr){
     return arr.reduce((a,b)=>a + b.amount, 0);
   }
@@ -771,6 +835,7 @@ import {
     renderList('roditeli');
     renderList('shared');
     renderIncomeList();
+    renderExpensesHistory();
     renderHistory();
   }
 
@@ -829,40 +894,175 @@ import {
     });
   }
 
+  const EXPENSE_LABELS = { zhenya: 'Расход — Женя', roditeli: 'Расход — Родители', shared: 'Расход — Общий' };
+  const EXPENSE_BADGE_CLASS = { zhenya: 'e-zhenya', roditeli: 'e-roditeli', shared: 'e-shared' };
+
+  function renderExpensesHistory(){
+    const ul = document.getElementById('list-expenses-history');
+    ul.innerHTML = '';
+
+    const items = [];
+    ['zhenya','roditeli','shared'].forEach(key=>{
+      data.expenses[key].forEach(item=>{
+        items.push({ key, item });
+      });
+    });
+
+    if(items.length === 0){
+      const hint = document.createElement('div');
+      hint.className = 'empty-hint';
+      hint.textContent = 'Пока нет расходов';
+      ul.appendChild(hint);
+      return;
+    }
+
+    items.sort((a,b)=> new Date(b.item.date) - new Date(a.item.date));
+
+    items.forEach(({key, item})=>{
+      const li = document.createElement('li');
+
+      const left = document.createElement('span');
+      const badge = document.createElement('span');
+      badge.className = 'badge ' + EXPENSE_BADGE_CLASS[key];
+      badge.textContent = EXPENSE_LABELS[key];
+      left.appendChild(badge);
+      left.appendChild(document.createTextNode(' ' + (item.note ? item.note + ' — ' : '') + fmt(item.amount)));
+
+      const actions = document.createElement('span');
+      actions.className = 'actions';
+
+      const edit = document.createElement('button');
+      edit.className = 'edit';
+      edit.textContent = '✎';
+      edit.title = 'Скорректировать';
+      edit.addEventListener('click', ()=>{
+        const newAmountRaw = prompt('Новая сумма расхода:', item.amount);
+        if(newAmountRaw === null) return;
+        const newAmount = parseFloat(newAmountRaw);
+        if(isNaN(newAmount) || newAmount < 0){ alert('Некорректная сумма'); return; }
+        const newNote = prompt('Комментарий:', item.note || '');
+        item.amount = newAmount;
+        item.note = (newNote || '').trim();
+        save();
+        render();
+      });
+
+      const del = document.createElement('button');
+      del.className = 'del';
+      del.textContent = '×';
+      del.title = 'Удалить';
+      del.addEventListener('click', ()=>{
+        data.expenses[key] = data.expenses[key].filter(x=>x.id !== item.id);
+        save();
+        render();
+      });
+
+      actions.appendChild(edit);
+      actions.appendChild(del);
+      li.appendChild(left);
+      li.appendChild(actions);
+      ul.appendChild(li);
+    });
+  }
+
   function renderHistory(){
     const ul = document.getElementById('historyList');
     ul.innerHTML = '';
 
     const entries = [];
 
+    // Расходы
+    ['zhenya','roditeli','shared'].forEach(key=>{
+      data.expenses[key].forEach(item=>{
+        entries.push({
+          id: item.id, date: item.date, amount: item.amount, note: item.note,
+          type: 'expense',
+          badgeClass: 'e-' + key, badgeText: EXPENSE_LABELS[key],
+          remove: ()=>{ data.expenses[key] = data.expenses[key].filter(x=>x.id!==item.id); },
+          edit: ()=>{
+            const newAmountRaw = prompt('Новая сумма расхода:', item.amount);
+            if(newAmountRaw === null) return;
+            const newAmount = parseFloat(newAmountRaw);
+            if(isNaN(newAmount) || newAmount < 0){ alert('Некорректная сумма'); return; }
+            const newNote = prompt('Комментарий:', item.note || '');
+            item.amount = newAmount;
+            item.note = (newNote || '').trim();
+            save();
+            render();
+          }
+        });
+      });
+    });
+
+    // Снятия
     data.withdrawals.zhenya.forEach(w=>{
       entries.push({ id: w.id, date: w.date, amount: w.amount, note: w.note,
+        type: 'withdraw',
         badgeClass: 'w-zhenya', badgeText: 'Снятие — Женя',
-        remove: ()=>{ data.withdrawals.zhenya = data.withdrawals.zhenya.filter(x=>x.id!==w.id); } });
+        remove: ()=>{ data.withdrawals.zhenya = data.withdrawals.zhenya.filter(x=>x.id!==w.id); },
+        edit: ()=>{
+          const newAmountRaw = prompt('Новая сумма снятия:', w.amount);
+          if(newAmountRaw === null) return;
+          const newAmount = parseFloat(newAmountRaw);
+          if(isNaN(newAmount) || newAmount < 0){ alert('Некорректная сумма'); return; }
+          const newNote = prompt('Комментарий:', w.note || '');
+          w.amount = newAmount;
+          w.note = (newNote || '').trim();
+          save();
+          render();
+        } });
     });
     data.withdrawals.roditeli.forEach(w=>{
       entries.push({ id: w.id, date: w.date, amount: w.amount, note: w.note,
+        type: 'withdraw',
         badgeClass: 'w-roditeli', badgeText: 'Снятие — Родители',
-        remove: ()=>{ data.withdrawals.roditeli = data.withdrawals.roditeli.filter(x=>x.id!==w.id); } });
+        remove: ()=>{ data.withdrawals.roditeli = data.withdrawals.roditeli.filter(x=>x.id!==w.id); },
+        edit: ()=>{
+          const newAmountRaw = prompt('Новая сумма снятия:', w.amount);
+          if(newAmountRaw === null) return;
+          const newAmount = parseFloat(newAmountRaw);
+          if(isNaN(newAmount) || newAmount < 0){ alert('Некорректная сумма'); return; }
+          const newNote = prompt('Комментарий:', w.note || '');
+          w.amount = newAmount;
+          w.note = (newNote || '').trim();
+          save();
+          render();
+        } });
     });
+
+    // Переводы
     data.transfers.forEach(t=>{
       const label = t.from === 'zhenya' ? 'Женя → Родители' : 'Родители → Женя';
       entries.push({ id: t.id, date: t.date, amount: t.amount, note: t.note,
+        type: 'transfer',
         badgeClass: 'transfer', badgeText: 'Перевод: ' + label,
-        remove: ()=>{ data.transfers = data.transfers.filter(x=>x.id!==t.id); } });
+        remove: ()=>{ data.transfers = data.transfers.filter(x=>x.id!==t.id); },
+        edit: ()=>{
+          const newAmountRaw = prompt('Новая сумма перевода:', t.amount);
+          if(newAmountRaw === null) return;
+          const newAmount = parseFloat(newAmountRaw);
+          if(isNaN(newAmount) || newAmount < 0){ alert('Некорректная сумма'); return; }
+          const newNote = prompt('Комментарий:', t.note || '');
+          t.amount = newAmount;
+          t.note = (newNote || '').trim();
+          save();
+          render();
+        } });
     });
 
     entries.sort((a,b)=> new Date(b.date) - new Date(a.date));
 
-    if(entries.length === 0){
+    const filtered = historyFilter === 'all' ? entries : entries.filter(e=>e.type === historyFilter);
+
+    if(filtered.length === 0){
       const hint = document.createElement('div');
       hint.className = 'empty-hint';
-      hint.textContent = 'Пока нет снятий и переводов';
+      hint.textContent = 'Пока пусто';
       ul.appendChild(hint);
       return;
     }
 
-    entries.forEach(entry=>{
+    filtered.forEach(entry=>{
       const li = document.createElement('li');
       li.className = 'history-item';
 
@@ -873,8 +1073,21 @@ import {
       badge.textContent = entry.badgeText;
       const text = document.createElement('span');
       text.textContent = fmt(entry.amount) + (entry.note ? ' — ' + entry.note : '');
+      const date = document.createElement('span');
+      date.className = 'date';
+      date.textContent = fmtDate(entry.date);
       info.appendChild(badge);
       info.appendChild(text);
+      info.appendChild(date);
+
+      const actions = document.createElement('span');
+      actions.className = 'actions';
+
+      const edit = document.createElement('button');
+      edit.className = 'edit';
+      edit.textContent = '✎';
+      edit.title = 'Редактировать';
+      edit.addEventListener('click', entry.edit);
 
       const del = document.createElement('button');
       del.className = 'del';
@@ -886,8 +1099,11 @@ import {
         render();
       });
 
+      actions.appendChild(edit);
+      actions.appendChild(del);
+
       li.appendChild(info);
-      li.appendChild(del);
+      li.appendChild(actions);
       ul.appendChild(li);
     });
   }
@@ -906,7 +1122,28 @@ import {
     items.slice().reverse().forEach(item=>{
       const li = document.createElement('li');
       const left = document.createElement('span');
+      left.className = 'item-text';
       left.textContent = (item.note ? item.note + ' — ' : '') + fmt(item.amount);
+
+      const actions = document.createElement('span');
+      actions.className = 'actions';
+
+      const edit = document.createElement('button');
+      edit.className = 'edit';
+      edit.textContent = '✎';
+      edit.title = 'Редактировать';
+      edit.addEventListener('click', ()=>{
+        const newAmountRaw = prompt('Новая сумма расхода:', item.amount);
+        if(newAmountRaw === null) return;
+        const newAmount = parseFloat(newAmountRaw);
+        if(isNaN(newAmount) || newAmount < 0){ alert('Некорректная сумма'); return; }
+        const newNote = prompt('Комментарий:', item.note || '');
+        item.amount = newAmount;
+        item.note = (newNote || '').trim();
+        save();
+        render();
+      });
+
       const del = document.createElement('button');
       del.className = 'del';
       del.textContent = '×';
@@ -916,8 +1153,11 @@ import {
         save();
         render();
       });
+
+      actions.appendChild(edit);
+      actions.appendChild(del);
       li.appendChild(left);
-      li.appendChild(del);
+      li.appendChild(actions);
       ul.appendChild(li);
     });
   }
@@ -926,30 +1166,18 @@ import {
     return Date.now().toString(36) + Math.random().toString(36).slice(2,7);
   }
 
-  // Доход
-  document.getElementById('incomeForm').addEventListener('submit', function(e){
-    e.preventDefault();
-    const amountInput = document.getElementById('incomeAmount');
-    const noteInput = document.getElementById('incomeNote');
-    const amount = parseFloat(amountInput.value);
-    if(!amount || amount <= 0) return;
-    data.incomes.push({ id: uid(), amount, note: noteInput.value.trim(), date: new Date().toISOString() });
-    amountInput.value = '';
-    noteInput.value = '';
-    save();
-    render();
-  });
-
   // Расходы (3 формы)
   document.querySelectorAll('.col form').forEach(form=>{
     form.addEventListener('submit', function(e){
       e.preventDefault();
       const key = form.getAttribute('data-target');
-      const input = form.querySelector('input');
-      const amount = parseFloat(input.value);
+      const amountInput = form.querySelector('input[type=number]');
+      const noteInput = form.querySelector('input[type=text]');
+      const amount = parseFloat(amountInput.value);
       if(!amount || amount <= 0) return;
-      data.expenses[key].push({ id: uid(), amount, date: new Date().toISOString() });
-      input.value = '';
+      data.expenses[key].push({ id: uid(), amount, note: noteInput.value.trim(), date: new Date().toISOString() });
+      amountInput.value = '';
+      noteInput.value = '';
       save();
       render();
     });
@@ -1008,6 +1236,16 @@ import {
     noteInput.value = '';
     save();
     render();
+  });
+
+  // Фильтры истории
+  document.getElementById('historyFilters').addEventListener('click', (e)=>{
+    const btn = e.target.closest('button[data-filter]');
+    if(!btn) return;
+    historyFilter = btn.getAttribute('data-filter');
+    document.querySelectorAll('#historyFilters button').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    renderHistory();
   });
 
   // Экспорт
